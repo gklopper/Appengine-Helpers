@@ -1,6 +1,0 @@
-WEB-INF
-.idea
-project/boot
-*.iml
-lib_managed
-target
