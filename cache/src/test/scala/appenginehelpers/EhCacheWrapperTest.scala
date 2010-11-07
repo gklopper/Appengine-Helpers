@@ -8,24 +8,24 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   //ensure we are not operating on a google memcache
   System.clearProperty("com.google.appengine.runtime.version")
 
-  override def beforeEach = new Object with ChameleonCache {cache.clearAll}
+  override def beforeEach = new Object with HybridCache {cache.clearAll}
   override def afterEach = beforeEach
 
   test("should put and get a value") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.get("key") should equal ("value")
     }
   }
 
   test("should return null if not found") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.get("key2") should equal (null)
     }
   }
 
   test("should clear a value") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.delete("key") should equal (true)
       cache.delete("key") should equal (false)
@@ -34,7 +34,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   test("should know if something is in the cache") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.contains("key") should equal (true)
       cache.contains("missing") should equal (false)
@@ -42,7 +42,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   test("should remove all items") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.put("key2", "value2")
       cache.clearAll
@@ -52,20 +52,20 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   test("should use same cache") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value")
     }
 
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.contains("key") should equal (true)
     }
   }
 
   test("should add with expiration") {
-    new Object with ChameleonCache {
+    new Object with HybridCache {
       cache.put("key", "value", 1 second)
       cache.get("key") should equal ("value")
-      Thread.sleep(1000)
+      Thread.sleep(2000)
       cache.get("key") should equal (null)
     }
   }

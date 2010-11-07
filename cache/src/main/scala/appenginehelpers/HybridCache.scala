@@ -6,9 +6,9 @@ import com.google.appengine.api.memcache._
 import net.sf.ehcache.config.{CacheConfiguration, Configuration}
 import java.util.logging.Logger
 
-trait ChameleonCache {
+trait HybridCache {
 
-  private val logger = Logger.getLogger(classOf[ChameleonCache].getName)
+  private val logger = Logger.getLogger(classOf[HybridCache].getName)
 
   implicit def int2expiringInt(timeToLiveInSeconds: Int) = ExpiringInt(timeToLiveInSeconds)
 

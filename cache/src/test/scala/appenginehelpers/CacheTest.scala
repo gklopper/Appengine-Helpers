@@ -1,4 +1,4 @@
-import appenginehelpers.ChameleonCache
+import appenginehelpers.HybridCache
 import com.google.appengine.tools.development.testing.{LocalDatastoreServiceTestConfig, LocalServiceTestHelper}
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
@@ -12,7 +12,7 @@ class CacheTest extends FunSuite with ShouldMatchers{
     appengineEnvironment.setUp
     System.setProperty("com.google.appengine.runtime.version", "1.3.0")
 
-    val stub = new Object with ChameleonCache
+    val stub = new Object with HybridCache
 
     stub.cache.getClass.getName should equal ("com.google.appengine.api.memcache.MemcacheServiceImpl")
 
@@ -23,7 +23,7 @@ class CacheTest extends FunSuite with ShouldMatchers{
 
     System.clearProperty("com.google.appengine.runtime.version")
 
-    val stub = new Object with ChameleonCache
+    val stub = new Object with HybridCache
 
     stub.cache.getClass.getName should equal ("appenginehelpers.EhCacheWrapper")
   }
