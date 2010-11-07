@@ -101,12 +101,12 @@ public class EhCacheWrapper implements MemcacheService {
     }
 
     @Override
-    public Long increment(Object o, long l) {
-        throw new UnsupportedOperationException();
+    public Long increment(Object key, long incrementAmount) {
+       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Long increment(Object o, long l, Long aLong) {
+    public Long increment(Object key, long incrementAmoun, Long aLong) {
         throw new UnsupportedOperationException();
     }
 

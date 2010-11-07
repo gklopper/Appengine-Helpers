@@ -20,7 +20,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
 
   test("should return null if not found") {
     new Object with HybridCache {
-      cache.get("key2") should equal (null)
+      cache.get("key") should equal (null)
     }
   }
 
