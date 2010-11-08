@@ -7,7 +7,6 @@ import net.sf.ehcache.config.{CacheConfiguration, Configuration}
 import java.util.logging.Logger
 
 trait HybridCache {
-
   private val logger = Logger.getLogger(classOf[HybridCache].getName)
 
   implicit def int2expiringInt(timeToLiveInSeconds: Int) = ExpiringInt(timeToLiveInSeconds)
@@ -30,22 +29,22 @@ trait HybridCache {
     }
     case None => {
       logger.info("Using EHCache")
-      new EhCacheWrapper(CacheConfig.getCache)
+      new EhCacheWrapper(EhCacheConfig.getCache)
     }
   }
 }
 
-private object CacheConfig {
+private object EhCacheConfig {
+    val cacheConfiguration = new CacheConfiguration("default", 5000)
+    cacheConfiguration.setDiskPersistent(false)
+    cacheConfiguration.setEternal(false)
+    cacheConfiguration.setOverflowToDisk(false)
+    val configuration = new Configuration()
+    configuration.setDefaultCacheConfiguration(cacheConfiguration)
 
-  val cacheConfiguration = new CacheConfiguration("default", 5000)
-  cacheConfiguration.setDiskPersistent(false)
-  cacheConfiguration.setEternal(false)
-  cacheConfiguration.setOverflowToDisk(false)
-  val configuration = new Configuration()
-  configuration.setDefaultCacheConfiguration(cacheConfiguration)
+    val cacheManager = new CacheManager(configuration)
+    cacheManager.addCache("default")
 
-  val cacheManager = new CacheManager(configuration)
-  cacheManager.addCache("default")
+    def getCache = cacheManager.getCache("default")
+  }
 
-  def getCache = cacheManager.getCache("default")
-}
