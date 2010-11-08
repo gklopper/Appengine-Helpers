@@ -6,8 +6,6 @@ import com.google.appengine.tools.development.testing.{LocalServiceTestHelper, L
 
 class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
-  //ensure we are not operating on a google memcache
-
   val appengineEnvironment = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
 
   override def beforeEach = {
@@ -17,34 +15,34 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
 
   override def afterEach = beforeEach
 
-  def testBoth(message: String)(f: Unit => Unit) {
-    test(message + " (EhCahe)") {f()}
+  def testBoth(message: String)(testFunction: => Unit) {
+    
+    test(message + " (EhCahe)") { testFunction }
 
     test(message + " (Appengine cache)") {
       System.setProperty("com.google.appengine.runtime.version", "1.1.1")
       appengineEnvironment.setUp
-      f()
+      testFunction
       appengineEnvironment.tearDown
     }
-
   }
 
 
   testBoth("should put and get a value") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.get("key") should equal("value")
     }
   }
 
   testBoth("should return null if not found") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.get("key") should equal(null)
     }
   }
 
   testBoth("should clear a value") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.delete("key") should equal(true)
       cache.delete("key") should equal(false)
@@ -53,7 +51,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   testBoth("should know if something is in the cache") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.contains("key") should equal(true)
       cache.contains("missing") should equal(false)
@@ -61,7 +59,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   testBoth("should remove all items") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.put("key", "value")
       cache.put("key2", "value2")
       cache.clearAll
@@ -71,7 +69,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   }
 
   testBoth("should use same cache") {
-    _ => {
+
       new Object with HybridCache {
         cache.put("key", "value")
       }
@@ -79,11 +77,11 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
       new Object with HybridCache {
         cache.contains("key") should equal(true)
       }
-    }
+
   }
 
   testBoth("should add with expiration") {
-    _ => new Object with HybridCache {
+    new Object with HybridCache {
       cache.put("key", "value", 1 second)
       cache.get("key") should equal("value")
       Thread.sleep(2000)
