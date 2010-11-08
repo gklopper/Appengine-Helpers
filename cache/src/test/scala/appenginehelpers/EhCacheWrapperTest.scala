@@ -22,8 +22,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
     test(message + " (Appengine cache)") {
       System.setProperty("com.google.appengine.runtime.version", "1.1.1")
       appengineEnvironment.setUp
-      testFunction
-      appengineEnvironment.tearDown
+      try testFunction finally appengineEnvironment.tearDown
     }
   }
 

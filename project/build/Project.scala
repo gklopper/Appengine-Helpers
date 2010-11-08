@@ -1,9 +1,9 @@
+import java.io.File
 import sbt._
 
 class Project(info: ProjectInfo) extends ParentProject(info) {
 
   lazy val cache = project("cache", "Cache", new CacheProject(_))
-
 
   class CacheProject(info: ProjectInfo) extends AppengineProject(info) {
     val ehCache = "net.sf.ehcache" % "ehcache" % "2.0.0"
@@ -14,6 +14,10 @@ class Project(info: ProjectInfo) extends ParentProject(info) {
   }
 
   class AppengineProject(info: ProjectInfo) extends DefaultProject(info) {
+
+    override def managedStyle = ManagedStyle.Maven
+    lazy val publishTo = Resolver.file("Github", new File("../mvn.github.com/repository/"))
+
     val appengineVersion = "1.3.8"
     val appengineApi = "com.google.appengine" % "appengine-api-1.0-sdk" % appengineVersion
     val appengineTesting = "com.google.appengine" % "appengine-testing" % appengineVersion % "test"
