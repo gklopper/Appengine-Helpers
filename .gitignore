@@ -4,4 +4,6 @@ project/boot
 *.iml
 lib_managed
 target
+logging
+out
 
