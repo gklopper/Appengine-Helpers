@@ -10,11 +10,12 @@ trait UrlFetcher {
 
   private lazy val log = getLogger (classOf[UrlFetcher].getName)
 
-  private lazy val inAppengine = SystemProperty.environment.value match {
-    case SystemProperty.Environment.Value.Production => true
-    case _ => false
+  private lazy val inAppengine = Option(appVersion) match {
+    case Some(_) => true
+    case None => false
   }
-  private lazy val appVersion = SystemProperty.applicationVersion.get
+
+  private lazy val appVersion = SystemProperty.version.get
   private lazy val cache = MemcacheServiceFactory.getMemcacheService(appVersion)
 
   implicit def string2url(url: String) = new URL(url)
@@ -28,7 +29,7 @@ trait UrlFetcher {
       case Some(result: String) => Some(result)
       case None => {
         val result = fetchRemote(url)
-        cache.put(url, result, Expiration.byDeltaSeconds(expiration.expirationSeconds))
+        result.foreach(cache.put(url, _, Expiration.byDeltaSeconds(expiration.expirationSeconds)))
         result
       }
     } else {
