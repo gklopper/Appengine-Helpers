@@ -1,9 +1,6 @@
 package appenginehelpers;
 
-import com.google.appengine.api.memcache.ErrorHandler;
-import com.google.appengine.api.memcache.Expiration;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.Stats;
+import com.google.appengine.api.memcache.*;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
@@ -34,7 +31,12 @@ public class EhCacheWrapper implements MemcacheService {
     @Override
     public Object get(Object key) {
         Element element = cache.get(key);
-        return element == null ? null : element.getValue();
+        return element == null ? null : element.getObjectValue();
+    }
+
+    @Override
+    public MemcacheService.IdentifiableValue getIdentifiable(Object o) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -67,6 +69,16 @@ public class EhCacheWrapper implements MemcacheService {
 
     @Override
     public <T> Set<T> putAll(Map<T, ?> tMap, Expiration expiration, MemcacheService.SetPolicy setPolicy) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean putIfUntouched(Object o, MemcacheService.IdentifiableValue identifiableValue, Object o1, Expiration expiration) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean putIfUntouched(Object o, MemcacheService.IdentifiableValue identifiableValue, Object o1) {
         throw new UnsupportedOperationException();
     }
 
