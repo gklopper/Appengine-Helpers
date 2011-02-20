@@ -35,6 +35,11 @@ public class EhCacheWrapper implements MemcacheService {
     }
 
     @Override
+    public IdentifiableValue getIdentifiable(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean contains(Object key) {
         return cache.isKeyInCache(key);
     }
@@ -64,6 +69,16 @@ public class EhCacheWrapper implements MemcacheService {
 
     @Override
     public <T> Set<T> putAll(Map<T, ?> tMap, Expiration expiration, MemcacheService.SetPolicy setPolicy) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean putIfUntouched(Object o, IdentifiableValue identifiableValue, Object o1, Expiration expiration) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean putIfUntouched(Object o, IdentifiableValue identifiableValue, Object o1) {
         throw new UnsupportedOperationException();
     }
 
