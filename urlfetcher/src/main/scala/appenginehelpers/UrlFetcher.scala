@@ -12,13 +12,9 @@ trait UrlFetcher {
 
   private lazy val log = getLogger (classOf[UrlFetcher].getName)
 
-  private lazy val inAppengine = Option(appVersion) match {
-    case Some(_) => true
-    case None => false
-  }
-
-  private lazy val appVersion = SystemProperty.version.get
-  private lazy val cache = MemcacheServiceFactory.getMemcacheService(appVersion)
+  private lazy val inAppengine = appVersion.isDefined
+  private lazy val appVersion = Option(SystemProperty.version.get)
+  private lazy val cache = MemcacheServiceFactory.getMemcacheService("url-fetcher-" + appVersion.getOrElse("no-version"))
 
   implicit def string2url(url: String) = new URL(url)
   implicit def int2expiration(expirationSeconds: Int) = ExpirationSeconds(expirationSeconds)
@@ -32,14 +28,16 @@ trait UrlFetcher {
     GET(url + paramString, expiration)
   }
 
-  def GET(url: URL, expiration: ExpirationSeconds): Response = if (inAppengine) handlePotentiallyCached(url, expiration) else fetchRemote(url)
+  def GET(url: URL, expiration: ExpirationSeconds): Response =
+    if (inAppengine) handlePotentiallyCached(url, expiration)
+    else fetchRemote(url)
 
   private def fetchRemote(url: URL) = {
     val connection = url.openConnection.asInstanceOf[HttpURLConnection]
     connection.getHeaderFields
     connection.getResponseCode match {
       case 200 => {
-        log.info("remote fetch succeded: " + url)
+        log.info("remote fetch succeeded: " + url)
         Response(200, Some(readAsString(connection.getInputStream)), extractHeaders(connection.getHeaderFields))
       }
       case differentCode => {
@@ -74,8 +72,8 @@ trait UrlFetcher {
     builder toString
   }
 
-  private def extractHeaders(h: java.util.Map[String, java.util.List[String]]) = {
-    h.map({case (key, values) => key -> values.last}).toMap
+  private def extractHeaders(headers: java.util.Map[String, java.util.List[String]]) = {
+    headers.map({case (key, values) => key -> values.last}).toMap
   }
 }
 
