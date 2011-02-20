@@ -24,24 +24,41 @@ trait UrlFetcher {
   def GET(url: URL): Option[String] = GET(url, 0 seconds)
 
   def GET(url: URL, expiration: ExpirationSeconds): Option[String] = {
-
-    if (inAppengine) Option(cache.get(url)) match {
-      case Some(result: String) => Some(result)
-      case None => {
-        val result = fetchRemote(url)
-        result.foreach(cache.put(url, _, Expiration.byDeltaSeconds(expiration.expirationSeconds)))
-        result
-      }
-    } else {
+    if (inAppengine)
+      handlePotentiallyCached(url, expiration)
+    else
       fetchRemote(url)
-    }
   }
 
   private def fetchRemote(url: URL) = {
     val connection = url.openConnection.asInstanceOf[HttpURLConnection]
     connection.getResponseCode match {
-      case 200 => Some(readAsString(connection.getInputStream))
-      case _ => None
+      case 200 => {
+        log.info("remote fetch succeded: " + url)
+        Some(readAsString(connection.getInputStream))
+      }
+      case differentCode => {
+        log.info("remote fetch failed " + differentCode + ": " + url)
+        None
+      }
+    }
+  }
+
+  private def handlePotentiallyCached(url: URL, expiration: ExpirationSeconds): Option[String] = {
+    Option(cache.get(url)) match {
+      case Some(result: String) => {
+        log.info("cache hit: " + url)
+        Some(result)
+      }
+      case None => {
+        log.info("cache miss: " + url)
+        val result = fetchRemote(url)
+        if (expiration shouldCache) {
+          log.info("caching: " + url)
+          result.foreach(cache.put(url, _, Expiration.byDeltaSeconds(expiration.expirationSeconds)))
+        }
+        result
+      }
     }
   }
 
@@ -57,4 +74,6 @@ case class ExpirationSeconds(expirationSeconds: Int) {
   def seconds = ExpirationSeconds(expirationSeconds)
   def minutes = ExpirationSeconds(expirationSeconds * 60)
   def hours = ExpirationSeconds(expirationSeconds * 60 * 60)
+
+  lazy val shouldCache = expirationSeconds > 0
 }

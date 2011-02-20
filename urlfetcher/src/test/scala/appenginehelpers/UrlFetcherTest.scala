@@ -28,7 +28,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   test("should return None on error") {
     System clearProperty "com.google.appengine.runtime.version"
     new UrlFetcher {
-      val response = GET("http://function-tests.appspot.com/404")
+      val response = GET("http://functional-tests.appspot.com/404")
 
       response should be (None)
     }
@@ -45,9 +45,8 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should fetch from cache") {
-
-    appengineHelper.setUp
     System setProperty ("com.google.appengine.runtime.version", "1.3.0")
+    appengineHelper setUp
 
     new UrlFetcher {
       val firstResponse = GET("http://functional-tests.appspot.com/random", 10 seconds)
