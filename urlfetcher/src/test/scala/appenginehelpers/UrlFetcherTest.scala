@@ -56,6 +56,28 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     }
   }
 
+  test("should build and encode parameters from map") {
+    System clearProperty "com.google.appengine.runtime.version"
+
+    new UrlFetcher {
+      val response = GET("http://functional-tests.appspot.com/param", Map("val" -> "hello world"))
+
+      response should equal (Some("hello world"))
+    }
+
+  }
+
+  test("should fetch from cache with params") {
+    System setProperty ("com.google.appengine.runtime.version", "1.3.0")
+    appengineHelper setUp
+
+    new UrlFetcher {
+      val firstResponse = GET("http://functional-tests.appspot.com/random", Map("foo" -> "bar"), 10 seconds)
+      val secondResponse = GET("http://functional-tests.appspot.com/random", Map("foo" -> "bar"))
+      firstResponse should equal (secondResponse)
+    }
+  }
+
   def appengineHelper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
 
 }

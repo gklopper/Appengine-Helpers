@@ -5,6 +5,8 @@ import java.net.{HttpURLConnection, URLConnection, URL}
 import java.io.{BufferedInputStream, InputStream}
 import java.util.logging.Logger._
 import com.google.appengine.api.memcache.{Expiration, MemcacheServiceFactory}
+import java.net.URLEncoder
+
 
 trait UrlFetcher {
 
@@ -21,14 +23,16 @@ trait UrlFetcher {
   implicit def string2url(url: String) = new URL(url)
   implicit def int2expiration(expirationSeconds: Int) = ExpirationSeconds(expirationSeconds)
 
+  def GET(url: String, params: Map[String, String]): Option[String] = GET(url, params, 0 seconds)
+
   def GET(url: URL): Option[String] = GET(url, 0 seconds)
 
-  def GET(url: URL, expiration: ExpirationSeconds): Option[String] = {
-    if (inAppengine)
-      handlePotentiallyCached(url, expiration)
-    else
-      fetchRemote(url)
+  def GET(url: String, params: Map[String, String], expiration: ExpirationSeconds): Option[String] = {
+    val paramString = params.foldLeft("?")({case (original, (key, value)) => original + key + "=" + URLEncoder.encode(value, "UTF-8") + "&"})
+    GET(url + paramString, expiration)
   }
+
+  def GET(url: URL, expiration: ExpirationSeconds): Option[String] = if (inAppengine) handlePotentiallyCached(url, expiration) else fetchRemote(url)
 
   private def fetchRemote(url: URL) = {
     val connection = url.openConnection.asInstanceOf[HttpURLConnection]
