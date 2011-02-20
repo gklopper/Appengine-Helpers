@@ -35,7 +35,7 @@ public class EhCacheWrapper implements MemcacheService {
     }
 
     @Override
-    public IdentifiableValue getIdentifiable(Object o) {
+    public MemcacheService.IdentifiableValue getIdentifiable(Object o) {
         throw new UnsupportedOperationException();
     }
 
@@ -73,12 +73,12 @@ public class EhCacheWrapper implements MemcacheService {
     }
 
     @Override
-    public boolean putIfUntouched(Object o, IdentifiableValue identifiableValue, Object o1, Expiration expiration) {
+    public boolean putIfUntouched(Object o, MemcacheService.IdentifiableValue identifiableValue, Object o1, Expiration expiration) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public boolean putIfUntouched(Object o, IdentifiableValue identifiableValue, Object o1) {
+    public boolean putIfUntouched(Object o, MemcacheService.IdentifiableValue identifiableValue, Object o1) {
         throw new UnsupportedOperationException();
     }
 
