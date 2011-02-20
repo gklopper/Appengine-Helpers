@@ -11,7 +11,11 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param?val=test+string")
 
-      response should equal (Some("test string"))
+      response match {
+        case Response(code, Some(body), headers) =>
+          code should equal (200)
+          body should equal ("test string")
+      }
     }
   }
 
@@ -30,7 +34,11 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/404")
 
-      response should be (None)
+      response match {
+        case Response(code, body, headers) =>
+          code should equal (404)
+          body should be (None)
+      }
     }
   }
 
@@ -40,7 +48,11 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
 
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param?val=test")
-      response should equal (Some("test"))
+      response match {
+        case Response(code, Some(body), headers) =>
+          code should equal (200)
+          body should equal ("test")
+      }
     }
   }
 
@@ -62,9 +74,27 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param", Map("val" -> "hello world"))
 
-      response should equal (Some("hello world"))
+      response match {
+        case Response(code, Some(body), headers) =>
+          code should equal(200)
+          body should equal ("hello world")
+      }
     }
 
+  }
+
+  test("should include headers") {
+    System clearProperty "com.google.appengine.runtime.version"
+
+    new UrlFetcher {
+      val response = GET("http://functional-tests.appspot.com/header", Map("val" -> "2000"))
+
+      response match {
+        case Response(code, _, headers) =>
+          code should equal(200)
+          headers("custom-header") should equal ("2000")
+      }
+    }
   }
 
   test("should fetch from cache with params") {
