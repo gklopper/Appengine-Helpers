@@ -1,13 +1,22 @@
 package appenginehelpers
 
-import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 import com.google.appengine.tools.development.testing.{LocalDatastoreServiceTestConfig, LocalServiceTestHelper}
+import org.scalatest.{BeforeAndAfterEach, FunSuite}
 
-class UrlFetcherTest extends FunSuite with ShouldMatchers {
+class UrlFetcherTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+
+  val appengineHelper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
+  val appengineVersion = "com.google.appengine.runtime.version"
+
+  override def beforeEach = appengineHelper.setUp
+
+  override def afterEach = appengineHelper.tearDown
 
   test("should fetch url") {
-    System clearProperty "com.google.appengine.runtime.version"
+
+    System clearProperty appengineVersion
+
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param?val=test+string")
 
@@ -20,7 +29,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should not cache result") {
-    System clearProperty "com.google.appengine.runtime.version"
+    System clearProperty appengineVersion
     new UrlFetcher {
       val firstResponse = GET("http://functional-tests.appspot.com/random")
       val secondResponse = GET("http://functional-tests.appspot.com/random")
@@ -30,12 +39,12 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should return None on error") {
-    System clearProperty "com.google.appengine.runtime.version"
+    System clearProperty appengineVersion
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/404")
 
       response match {
-        case Response(code, body, headers) =>
+        case Response(code, body, _) =>
           code should equal (404)
           body should be (None)
       }
@@ -43,13 +52,12 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should fetch remotely if not in cache") {
-    System setProperty ("com.google.appengine.runtime.version", "1.3.0")
-    appengineHelper setUp
+    System setProperty (appengineVersion, "1.3.0")
 
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param?val=test")
       response match {
-        case Response(code, Some(body), headers) =>
+        case Response(code, Some(body), _) =>
           code should equal (200)
           body should equal ("test")
       }
@@ -58,8 +66,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
 
 
   test("should fetch from cache") {
-    System setProperty ("com.google.appengine.runtime.version", "1.3.0")
-    appengineHelper setUp
+    System setProperty (appengineVersion, "1.3.0")
 
     new UrlFetcher {
       val firstResponse = GET("http://functional-tests.appspot.com/random", cacheFor = 10 seconds)
@@ -69,13 +76,13 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should build and encode parameters from map") {
-    System clearProperty "com.google.appengine.runtime.version"
+    System clearProperty appengineVersion
 
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/param", params = Map("val" -> "hello world"))
 
       response match {
-        case Response(code, Some(body), headers) =>
+        case Response(code, Some(body), _) =>
           code should equal(200)
           body should equal ("hello world")
       }
@@ -84,7 +91,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should include headers") {
-    System clearProperty "com.google.appengine.runtime.version"
+    System clearProperty appengineVersion
 
     new UrlFetcher {
       val response = GET("http://functional-tests.appspot.com/header", params = Map("val" -> "2000"))
@@ -98,8 +105,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
   }
 
   test("should fetch from cache with params") {
-    System setProperty ("com.google.appengine.runtime.version", "1.3.0")
-    appengineHelper setUp
+    System setProperty (appengineVersion, "1.3.0")
 
     new UrlFetcher {
       val firstResponse = GET("http://functional-tests.appspot.com/random", params = Map("foo" -> "bar"), cacheFor = 10 seconds)
@@ -107,7 +113,4 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
       firstResponse should equal (secondResponse)
     }
   }
-
-  def appengineHelper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
-
 }
