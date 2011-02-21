@@ -1,11 +1,11 @@
 package appenginehelpers
 
 import com.google.appengine.api.utils.SystemProperty
-import java.net.{HttpURLConnection, URLConnection, URL}
+import java.net.{HttpURLConnection, URL}
 import java.util.logging.Logger._
 import com.google.appengine.api.memcache.{Expiration, MemcacheServiceFactory}
 import java.net.URLEncoder
-import java.io.{Serializable, IOException, BufferedInputStream, InputStream}
+import java.io.{Serializable, BufferedInputStream, InputStream}
 import scala.collection.JavaConversions._
 
 trait UrlFetcher {
@@ -18,23 +18,22 @@ trait UrlFetcher {
 
   implicit def string2url(url: String) = new URL(url)
   implicit def int2expiration(expirationSeconds: Int) = ExpirationSeconds(expirationSeconds)
+  implicit def map2option(map: Map[String, String]) = Some(map)
 
-  def GET(url: String, params: Map[String, String]): Response = GET(url, params, 0 seconds)
 
-  def GET(url: URL): Response = GET(url, 0 seconds)
+  def GET(url: String, params: Option[Map[String, String]] = None, cacheFor: ExpirationSeconds = 0 seconds): Response = {
 
-  def GET(url: String, params: Map[String, String], expiration: ExpirationSeconds): Response = {
-    val paramString = params.foldLeft("?")({case (original, (key, value)) => original + key + "=" + URLEncoder.encode(value, "UTF-8") + "&"})
-    GET(url + paramString, expiration)
+    val paramString = params match {
+      case Some(p) => p.foldLeft("?")({case (original, (key, value)) => original + key + "=" + URLEncoder.encode(value, "UTF-8") + "&"})
+      case _ => ""
+    }
+
+    if (inAppengine) handlePotentiallyCached(url + paramString, cacheFor)
+      else fetchRemote(url + paramString)
   }
-
-  def GET(url: URL, expiration: ExpirationSeconds): Response =
-    if (inAppengine) handlePotentiallyCached(url, expiration)
-    else fetchRemote(url)
 
   private def fetchRemote(url: URL) = {
     val connection = url.openConnection.asInstanceOf[HttpURLConnection]
-    connection.getHeaderFields
     connection.getResponseCode match {
       case 200 => {
         log.info("remote fetch succeeded: " + url)
@@ -82,9 +81,9 @@ case class Response(responseCode: Int, body: Option[String], headers: Map[String
 }
 
 case class ExpirationSeconds(expirationSeconds: Int) {
-  def seconds = ExpirationSeconds(expirationSeconds)
-  def minutes = ExpirationSeconds(expirationSeconds * 60)
-  def hours = ExpirationSeconds(expirationSeconds * 60 * 60)
+  lazy val seconds = ExpirationSeconds(expirationSeconds)
+  lazy val minutes = ExpirationSeconds(expirationSeconds * 60)
+  lazy val hours = ExpirationSeconds(expirationSeconds * 60 * 60)
 
   lazy val shouldCache = expirationSeconds > 0
 }

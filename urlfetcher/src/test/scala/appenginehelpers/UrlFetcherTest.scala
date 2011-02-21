@@ -62,7 +62,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     appengineHelper setUp
 
     new UrlFetcher {
-      val firstResponse = GET("http://functional-tests.appspot.com/random", 10 seconds)
+      val firstResponse = GET("http://functional-tests.appspot.com/random", cacheFor = 10 seconds)
       val secondResponse = GET("http://functional-tests.appspot.com/random")
       firstResponse should equal (secondResponse)
     }
@@ -72,7 +72,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     System clearProperty "com.google.appengine.runtime.version"
 
     new UrlFetcher {
-      val response = GET("http://functional-tests.appspot.com/param", Map("val" -> "hello world"))
+      val response = GET("http://functional-tests.appspot.com/param", params = Map("val" -> "hello world"))
 
       response match {
         case Response(code, Some(body), headers) =>
@@ -87,7 +87,7 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     System clearProperty "com.google.appengine.runtime.version"
 
     new UrlFetcher {
-      val response = GET("http://functional-tests.appspot.com/header", Map("val" -> "2000"))
+      val response = GET("http://functional-tests.appspot.com/header", params = Map("val" -> "2000"))
 
       response match {
         case Response(code, _, headers) =>
@@ -102,8 +102,8 @@ class UrlFetcherTest extends FunSuite with ShouldMatchers {
     appengineHelper setUp
 
     new UrlFetcher {
-      val firstResponse = GET("http://functional-tests.appspot.com/random", Map("foo" -> "bar"), 10 seconds)
-      val secondResponse = GET("http://functional-tests.appspot.com/random", Map("foo" -> "bar"))
+      val firstResponse = GET("http://functional-tests.appspot.com/random", params = Map("foo" -> "bar"), cacheFor = 10 seconds)
+      val secondResponse = GET("http://functional-tests.appspot.com/random", params = Map("foo" -> "bar"))
       firstResponse should equal (secondResponse)
     }
   }
