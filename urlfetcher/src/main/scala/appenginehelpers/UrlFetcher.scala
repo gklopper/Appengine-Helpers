@@ -20,7 +20,6 @@ trait UrlFetcher {
   implicit def int2expiration(expirationSeconds: Int) = ExpirationSeconds(expirationSeconds)
   implicit def map2option(map: Map[String, String]) = Some(map)
 
-
   def GET(url: String, params: Option[Map[String, String]] = None, cacheFor: ExpirationSeconds = 0 seconds): Response = {
 
     val paramString = params match {
