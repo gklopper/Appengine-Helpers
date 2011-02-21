@@ -12,8 +12,8 @@ trait UrlFetcher {
 
   private lazy val log = getLogger (classOf[UrlFetcher].getName)
 
-  private lazy val inAppengine = appVersion.isDefined
-  private lazy val appVersion = Option(SystemProperty.version.get)
+  private lazy val inAppengine = Option(SystemProperty.version.get).isDefined
+  private lazy val appVersion = Option(SystemProperty.applicationVersion.get)
   private lazy val cache = MemcacheServiceFactory.getMemcacheService("url-fetcher-" + appVersion.getOrElse("no-version"))
 
   implicit def string2url(url: String) = new URL(url)
