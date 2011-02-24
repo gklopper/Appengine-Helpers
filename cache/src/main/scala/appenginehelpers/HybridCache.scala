@@ -25,26 +25,45 @@ trait HybridCache {
   lazy val cache = Option(SystemProperty.version.get) match {
     case Some(_) => {
       logger.info("Using App Engine cache")
-      MemcacheServiceFactory.getMemcacheService
+      new SimpleCache(MemcacheServiceFactory.getMemcacheService)
     }
     case None => {
       logger.info("Using EHCache")
-      new EhCacheWrapper(EhCacheConfig.getCache)
+      new SimpleCache(new EhCacheWrapper(EhCacheConfig.getCache))
     }
   }
 }
 
 private object EhCacheConfig {
-    val cacheConfiguration = new CacheConfiguration("default", 5000)
-    cacheConfiguration.setDiskPersistent(false)
-    cacheConfiguration.setEternal(false)
-    cacheConfiguration.setOverflowToDisk(false)
-    val configuration = new Configuration()
-    configuration.setDefaultCacheConfiguration(cacheConfiguration)
+  val cacheConfiguration = new CacheConfiguration("default", 5000)
+  cacheConfiguration.setDiskPersistent(false)
+  cacheConfiguration.setEternal(false)
+  cacheConfiguration.setOverflowToDisk(false)
+  val configuration = new Configuration()
+  configuration.setDefaultCacheConfiguration(cacheConfiguration)
 
-    val cacheManager = new CacheManager(configuration)
-    cacheManager.addCache("default")
+  val cacheManager = new CacheManager(configuration)
+  cacheManager.addCache("default")
 
-    def getCache = cacheManager.getCache("default")
+  def getCache = cacheManager.getCache("default")
+}
+
+class SimpleCache(cache: MemcacheService) {
+
+  def put(key: AnyRef, value: AnyRef) = cache.put(key, value)
+
+  def get(key: AnyRef) = Option(cache.get(key))
+
+  def delete(key: AnyRef) = cache.delete(key)
+
+  def contains(key: AnyRef) = cache.contains(key)
+
+  def put(key: AnyRef, value: AnyRef, expiration: Expiration) = cache.put(key, value, expiration)
+
+  def clearAll = cache.clearAll
+
+  def getOrElse(key: AnyRef)(f: => Option[AnyRef]) = get(key) match {
+    case Some(value) => Some(value)
+    case None => f
   }
-
+}

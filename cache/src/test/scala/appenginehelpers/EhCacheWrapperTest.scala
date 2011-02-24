@@ -30,13 +30,13 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   testBoth("should put and get a value") {
     new Object with HybridCache {
       cache.put("key", "value")
-      cache.get("key") should equal("value")
+      cache.get("key") should equal(Some("value"))
     }
   }
 
-  testBoth("should return null if not found") {
+  testBoth("should return None if not found") {
     new Object with HybridCache {
-      cache.get("key") should equal(null)
+      cache.get("key") should be (None)
     }
   }
 
@@ -45,7 +45,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
       cache.put("key", "value")
       cache.delete("key") should equal(true)
       cache.delete("key") should equal(false)
-      cache.get("key") should equal(null)
+      cache.get("key") should be (None)
     }
   }
 
@@ -79,12 +79,34 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
 
   }
 
+  testBoth("should get from cache and not call function"){
+    new HybridCache {
+      cache.put("key", "value")
+      val result = cache.getOrElse("key") {
+        fail ("should not have called this function")
+      }
+      result should equal (Some("value"))
+    }
+  }
+
+  testBoth("should miss cache and then call function") {
+
+    new HybridCache {
+      val result =cache.getOrElse("missing-key") {
+        Some("dog")
+      }
+
+      result should equal (Some("dog"))
+    }
+
+  }
+
   testBoth("should add with expiration") {
     new Object with HybridCache {
       cache.put("key", "value", 1 second)
-      cache.get("key") should equal("value")
+      cache.get("key") should equal(Some("value"))
       Thread.sleep(2000)
-      cache.get("key") should equal(null)
+      cache.get("key") should be (None)
     }
   }
 }
