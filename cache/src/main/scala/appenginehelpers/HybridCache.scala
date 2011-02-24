@@ -52,13 +52,13 @@ class SimpleCache(cache: MemcacheService) {
 
   def put(key: AnyRef, value: AnyRef) = cache.put(key, value)
 
+  def put(key: AnyRef, value: AnyRef, expiration: Expiration) = cache.put(key, value, expiration)
+
   def get(key: AnyRef) = Option(cache.get(key))
 
   def delete(key: AnyRef) = cache.delete(key)
 
   def contains(key: AnyRef) = cache.contains(key)
-
-  def put(key: AnyRef, value: AnyRef, expiration: Expiration) = cache.put(key, value, expiration)
 
   def clearAll = cache.clearAll
 
