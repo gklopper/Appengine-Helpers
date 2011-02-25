@@ -65,5 +65,4 @@ class SimpleCache(cache: MemcacheService) {
 
   def clearAll = cache.clearAll
 
-  //def getOrElse(key: AnyRef)(miss: => Option[AnyRef]) = get(key).orElse(miss)
 }
