@@ -4,7 +4,7 @@ import org.scalatest.matchers.ShouldMatchers
 import org.scalatest.{BeforeAndAfterEach, FunSuite}
 import com.google.appengine.tools.development.testing.{LocalServiceTestHelper, LocalDatastoreServiceTestConfig}
 
-class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
+class CacheTest extends FunSuite with ShouldMatchers with BeforeAndAfterEach {
 
   val appengineEnvironment = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig())
 
@@ -82,7 +82,7 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   testBoth("should get from cache and not call function"){
     new HybridCache {
       cache.put("key", "value")
-      val result = cache.getOrElse("key") {
+      val result = cache.get("key").orElse {
         fail ("should not have called this function")
       }
       result should equal (Some("value"))
@@ -92,11 +92,12 @@ class EhCacheWrapperTest extends FunSuite with ShouldMatchers with BeforeAndAfte
   testBoth("should miss cache and then call function") {
 
     new HybridCache {
-      val result =cache.getOrElse("missing-key") {
+      val result = cache.get("missing-key") orElse {
+        cache.put("missing-key", "dog")
         Some("dog")
       }
 
-      result should equal (Some("dog"))
+      cache.get("missing-key") should equal (Some("dog"))
     }
 
   }

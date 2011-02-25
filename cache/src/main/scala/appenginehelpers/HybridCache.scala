@@ -54,7 +54,10 @@ class SimpleCache(cache: MemcacheService) {
 
   def put(key: AnyRef, value: AnyRef, expiration: Expiration) = cache.put(key, value, expiration)
 
-  def get(key: AnyRef) = Option(cache.get(key))
+  def get(key: AnyRef) = Option(cache.get(key)) match {
+    case None => None
+    case hit => hit
+  }
 
   def delete(key: AnyRef) = cache.delete(key)
 
@@ -62,8 +65,5 @@ class SimpleCache(cache: MemcacheService) {
 
   def clearAll = cache.clearAll
 
-  def getOrElse(key: AnyRef)(f: => Option[AnyRef]) = get(key) match {
-    case Some(value) => Some(value)
-    case None => f
-  }
+  //def getOrElse(key: AnyRef)(miss: => Option[AnyRef]) = get(key).orElse(miss)
 }
